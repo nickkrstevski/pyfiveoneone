@@ -100,6 +100,10 @@ class Client:
         endpoint = f"transit/datafeeds?api_key={self.api_key}&operator_id={operator_id}"
         return self._request(endpoint)
 
+    def scheduled_departures_at_stop(self, operator_id: str, stop_id: int):
+        endpoint = f"transit/stoptimetable?api_key={self.api_key}&operatorref={operator_id}&monitoringref={stop_id}&format=json"
+        return self._request(endpoint)
+
     ### ZIP APIs ###
     def gtfs_feed_download(
         self, operator_id: str, dest_path: Optional[Union[str, Path]]
