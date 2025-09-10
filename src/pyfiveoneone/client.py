@@ -106,7 +106,11 @@ class Client:
 
     ### ZIP APIs ###
     def gtfs_feed_download(
-        self, operator_id: str, dest_path: Optional[Union[str, Path]]
+        self,
+        operator_id: str,
+        dest_path: Optional[Union[str, Path]],
+        MM: Optional[str] = None,
+        YYYY: Optional[str] = None,
     ) -> Path:
         """
         Download the GTFS feed ZIP for the given operator and save it to disk.
@@ -120,6 +124,8 @@ class Client:
         if dest_path and not str(dest_path).lower().endswith(".zip"):
             dest_path = str(dest_path) + ".zip"
         endpoint = f"transit/datafeeds?api_key={self.api_key}&operator_id={operator_id}"
+        if MM and YYYY:
+            endpoint += f"&historic={YYYY}-{MM}"
         return self._download(endpoint, dest_path)
 
     def get_operators(self):
