@@ -15,16 +15,6 @@ data_dir = "./cache/"
 client = Client()
 
 
-def pull_and_filter_raw_historical_data(MM: str, YYYY: str, operator_id: str = "CT"):
-    return download_extract_filter_month(YYYY=YYYY, MM=MM, operator_id=operator_id)
-
-
-def load_ct_historical_data(file_path: str):
-    df = pd.read_csv(f"{data_dir}{file_path}", delimiter=",")
-
-    return df
-
-
 def _ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
@@ -194,6 +184,12 @@ def plot_sf_nb_arrival_delay_histogram(source_df: pd.DataFrame) -> str:
 
     sf_nb = arrivals_22nd
 
+    # Filter for Express routes only
+    express_indexer: pd.Series = (
+        sf_nb["route_id"].astype(str).str.contains("Express", na=False)
+    )
+    sf_nb = sf_nb.loc[express_indexer].copy()
+
     # Build datetimes and compute delay (observed - scheduled) in minutes
     # Use arrival times since we're looking at arrivals at 22nd Street
     scheduled_dt = _parse_datetime(sf_nb, "service_date", "scheduled_arrival_time")
@@ -206,7 +202,7 @@ def plot_sf_nb_arrival_delay_histogram(source_df: pd.DataFrame) -> str:
     ).dt.month
 
     # Plot histogram (lazy import to avoid hard dependency during linting)
-    output_path = os.path.join(data_dir, "2025-22nd-nb-arrival-delay-hist.png")
+    output_path = os.path.join(data_dir, "2025-22nd-nb-arrival-delay-hist-express.png")
     try:
         plt = importlib.import_module("matplotlib.pyplot")
         plt.figure(figsize=(9, 5))
@@ -298,7 +294,7 @@ def plot_sf_nb_arrival_delay_histogram(source_df: pd.DataFrame) -> str:
         )
 
         plt.title(
-            "Caltrain to San Francisco: Minutes late upon arrival — 2025",
+            "Express Caltrain to 22nd St NB: Minutes late upon arrival — 2025",
             fontsize=16,
         )
         plt.xlabel("Minutes late (+) / early (-)")
